@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "224450644700",
+    "project_id": "point2-user",
+    "storage_bucket": "point2-user.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224450644700:android:0dd74ecf3741d47ee90219",
+        "android_client_info": {
+          "package_name": "com.devtor.point2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK1bZvHKgA0MqaV3PvuALPleqXnmoVMe0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

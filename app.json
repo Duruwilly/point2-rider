@@ -7,21 +7,91 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/images/splashScreen.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCwBek1VbADBzfIdYFW0R6UQmCoogeqyoc"
+        }
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch",
+          "location",
+          "remote-notification"
+        ],
+        "LSApplicationQueriesSchemes": "itms-apps",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+        "NSLocationWhenInUseUsageDescription": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+        "NSLocationAlwaysUsageDescription": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+        "NSLocationUsageDescription": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.devtor.point2",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION"
+      ],
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCwBek1VbADBzfIdYFW0R6UQmCoogeqyoc"
+        }
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-updates",
+        {
+          "username": "devtor"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ${PRODUCT_NAME} to access your photos for updating you profile."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+          "locationAlwaysPermission": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+          "locationWhenInUsePermission": "Allow ${PRODUCT_NAME} permission to access your location. Your location will be shared with the user enabling them to be able to track their items that is in transit.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "97250912-3933-43d2-addb-1085a6849ecd"
+      }
+    },
+    "owner": "devtor",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/97250912-3933-43d2-addb-1085a6849ecd"
     }
   }
 }
