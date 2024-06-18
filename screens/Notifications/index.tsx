@@ -108,11 +108,13 @@ const Notifications = () => {
         <Text style={[styles.headerText, { paddingTop: 20 }]}>
           Notifications
         </Text>
-        {loading.state ? (
+        {loading.state && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0077B6" />
+            {/* <ActivityIndicator size="large" color="#0077B6" /> */}
+            <Text>Fetching notifications...</Text>
           </View>
-        ) : notifications?.data?.length > 0 ? (
+        )}
+        {notifications?.data && notifications?.data?.length > 0 && (
           <Layout.FlatList
             data={notifications.data}
             renderItem={({ item, index }) => {
@@ -133,7 +135,8 @@ const Notifications = () => {
               />
             }
           />
-        ) : (
+        )}
+        {notifications?.data?.length === 0 && (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               You have no recent {"\n"}notifications

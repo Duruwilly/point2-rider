@@ -17,14 +17,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import Verified from "../../assets/icon/verified.svg";
 import Phone from "../../assets/icon/phone3.svg";
-import Speaker from "../../assets/icon/speaker.svg";
-import { FontAwesome6 } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { ApiRequest } from "../../services/ApiNetwork";
 import User from "../../models/User";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
-import { setUserMessages } from "../../store/reducers/app-reducer";
+import { clearUserMessages, setUserMessages } from "../../store/reducers/app-reducer";
+import Pusher from "pusher-js";
+import Echo from "laravel-echo";
 
 export interface userConnectedToOrder extends User {
   user_id: string;
@@ -32,6 +32,7 @@ export interface userConnectedToOrder extends User {
 
 const ChatBox = ({ route }: any) => {
   const { usersMessages } = useSelector((state: RootState) => state.appReducer);
+  const { auth_Id } = useSelector((state: RootState) => state.user);
   const [message, setMessage] = useState("");
   const [textInputMessage, setTextInputMessage] = useState("");
   const [textMessageDate, setTextMessageDate] = useState<Date | null>(null);
@@ -57,14 +58,19 @@ const ChatBox = ({ route }: any) => {
           url: `/messaging/get-user-connected-to-order?tracking_id=${route?.params?.trackingId}`,
           // payload: { tracking_id: route?.params?.trackingId },
         });
-        console.log("user-conected-to-order", response);
+        // console.log("user-conected-to-order", response);
 
         if (response.status === "success") {
           setUserConnectedToOrder(response.data.data);
         }
       } catch (error) {}
     })();
+
+    return () => {
+      dispatch(clearUserMessages());
+    };
   }, []);
+
   //   2 get messages between users
   // useEffect(() => {
   const getMessage = async () => {
@@ -72,7 +78,7 @@ const ChatBox = ({ route }: any) => {
       const response = await request("GET", {
         url: `/messaging/get-messages?to_user_id=${userConnectedToOrder?.user_id}`,
         // payload: { to_user_id: userConnectedToOrder?.user_id },
-        ignoreError: true
+        ignoreError: true,
       });
       // console.log("users-messages", response.data?.data);
 
@@ -82,8 +88,6 @@ const ChatBox = ({ route }: any) => {
     } catch (error) {}
   };
   // }, []);
-  const date = new Date();
-  // console.log(date.toLocaleDateString(), date.toLocaleTimeString());
 
   const sendMessage = async () => {
     if (message.length > 0) {
@@ -110,6 +114,32 @@ const ChatBox = ({ route }: any) => {
   useEffect(() => {
     getMessage();
   }, [userConnectedToOrder?.user_id]);
+
+  useEffect(() => {
+    const pusher = new Pusher("fbuopzuamzxyjydgetkb", {
+      cluster: "",
+    });
+
+    const echo = new Echo({
+      client: pusher,
+      broadcaster: "reverb",
+      key: "fbuopzuamzxyjydgetkb",
+      wsHost: "ws.point2.ng",
+      wsPort: 80,
+      wssPort: 80,
+      forceTLS: "https",
+      enabledTransports: ["ws", "wss"],
+    });
+
+    echo.channel("message").listen(`message_received${auth_Id}`, (e: any) => {
+      console.log("Event data:", e);
+      getMessage()
+    });
+
+    return () => {
+      echo.disconnect();
+    };
+  }, [auth_Id]);
 
   const messagess = [
     [
@@ -164,9 +194,9 @@ const ChatBox = ({ route }: any) => {
                   {userConnectedToOrder?.first_name ?? ""}{" "}
                   {userConnectedToOrder?.last_name ?? ""}
                 </Text>
-                <View style={styles.riderBadge}>
+                {/* <View style={styles.riderBadge}>
                   <Text style={styles.riderBadgeText}>Rider</Text>
-                </View>
+                </View> */}
               </View>
               {/* <Text style={styles.riderDetails}>AJKHR81 | Red Bike</Text> */}
             </View>
@@ -237,6 +267,7 @@ const ChatBox = ({ route }: any) => {
         </KeyboardAvoidingView>
         {/* </Layout.ScrollView> */}
 
+      </Layout>
         {/* BOTTOM INPUT */}
         <View style={styles.bottomInputContainer}>
           <View style={styles.inputWrapper}>
@@ -270,7 +301,6 @@ const ChatBox = ({ route }: any) => {
             </View>
           </View>
         </View>
-      </Layout>
     </SafeAreaView>
   );
 };
@@ -391,6 +421,7 @@ const styles = StyleSheet.create({
     // justifyContent: "flex-start",
     // width: "100%",
     marginTop: 6,
+    marginBottom: 180,
     paddingHorizontal: 20,
   },
   messageIncomingContainer: {
@@ -439,7 +470,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: "center",
     paddingTop: 3,
-    // backgroundColor: "#fff",
+    backgroundColor: "#fff",
     // shadowColor: "#000",
     // shadowOffset: { width: 0, height: 2 },
     // shadowOpacity: 0.25,

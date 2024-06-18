@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   RefreshControl,
   SafeAreaView,
@@ -201,7 +202,7 @@ const Deliveries = () => {
               <ActivityIndicator size="large" color="#0077B6" />
             </View>
           ) : orders?.data?.length > 0 ? (
-            <Layout.FlatList
+            <FlatList
               showsVerticalScrollIndicator={false}
               style={{ flex: 1 }}
               data={orders.data}

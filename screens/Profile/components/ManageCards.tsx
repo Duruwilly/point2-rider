@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import Layout from "../../../layouts/layout";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   StyleSheet,
   Text,
@@ -39,6 +40,13 @@ interface BankDetails {
   bank_id: number;
 }
 
+interface RiderBankDetails {
+  account_no: string;
+  bank_name: string;
+  account_name: string;
+  id: string;
+}
+
 const ManageCards = ({
   setPages,
 }: {
@@ -53,13 +61,16 @@ const ManageCards = ({
   const [openBottomSheet, setOpenBottomSheet] = useState(false);
   const [bottomSheetToOpen, setBottomSheetToOpen] = useState("");
   const [radioBtnChecked, setRadioBtnChecked] = useState<number | null>(null);
+  const [bankToDeleteId, setBankToDeleteId] = useState("")
   const navigation: any = useNavigation();
   const [banks, setBanks] = useState<BankType[]>([]);
+  const [ridersBank, setRidersBank] = useState<RiderBankDetails[]>([]);
   const [bankSelected, setBankSelected] = useState("");
   const [bankSearch, setBankSearch] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [bankDetails, setBanksDetails] = useState({} as BankDetails);
-
+  const [loading, setLoading] = useState(false);
+  const [addingLoading, setAddingLoading] = useState(false);
   const [userInput, setUserInput] = useState({
     name: "",
     bank_code: "",
@@ -87,28 +98,68 @@ const ManageCards = ({
     }
   };
 
+  const getAccountDetails = async () => {
+    try {
+      setLoading(true);
+      const resp = await request("GET", {
+        url: "/rider/banks/list",
+      });
+
+      if (resp.status === "success") {
+        setLoading(false);
+        setRidersBank(resp?.data?.data?.data);
+      }
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddCard = async () => {
     try {
+      setAddingLoading(true);
       const resp = await request("POST", {
-        url: "",
-        payload: { ...userInput },
+        url: "/rider/banks/add",
+        payload: {
+          bank_code: userInput?.bank_code,
+          account_no: userInput?.account_no,
+        },
       });
       if (resp.status === "success") {
+        alert(resp?.data?.message);
         navigation.navigate("bank-added-successfully", {
           number: userInput.account_no,
         });
-        // recall the function that fetches the bank details here
+        getAccountDetails();
+        setAddingLoading(false);
       }
-    } catch (error) {}
-    // navigation.navigate("bank-added-successfully", { number: "1234567789" });
+    } catch (error) {
+    } finally {
+      setAddingLoading(false);
+    }
   };
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const banks = await fetchBanks(bankSearch);
-  //     setBanks(banks);
-  //   })();
-  // }, [bankSearch]);
+  const handleDeleteCard = async () => {
+    try {
+      const resp = await request("DELETE", {
+        url: "/rider/banks/delete",
+        payload: {
+          id: bankToDeleteId,
+        },
+      });
+      if (resp.status === "success") {
+        alert(resp?.data?.message);
+        getAccountDetails();
+        setOpenBottomSheet(false)
+      }
+    } catch (error) {
+    } finally {
+    }
+  };
+
+  useEffect(() => {
+    getAccountDetails();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -136,28 +187,34 @@ const ManageCards = ({
       <Text style={[styles.headerText, { padding: 20 }]}>Bank Account</Text>
       <Layout.ScrollView>
         <View style={styles.container}>
-          <View style={styles.cardInfoContainer}>
-            <View style={styles.cardDetailsContainer}>
-              <View style={styles.cardIconContainer}>
-                <Bank />
+          {loading && <ActivityIndicator color={colors.primary} />}
+          {ridersBank?.map((item) => (
+            <View id={item?.id} style={styles.cardInfoContainer}>
+              <View style={[styles.cardDetailsContainer, {width: "78%"}]}>
+                <View style={styles.cardIconContainer}>
+                  <Bank />
+                </View>
+                <View style={[styles.cardTextContainer]}>
+                  <Text numberOfLines={2} style={[styles.cardTypeText, {width: "78%"}]}>
+                    {item?.account_name}
+                  </Text>
+                  <Text style={styles.cardNumberText}>
+                    {`${item?.bank_name} (${item?.account_no?.slice(6, 11)})`}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTypeText}>Samuel Ajayi</Text>
-                <Text style={styles.cardNumberText}>
-                  Firstbank of Nigeria (7160)
-                </Text>
-              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  setOpenBottomSheet(true);
+                  setBottomSheetToOpen("first");
+                  setBankToDeleteId(item?.id)
+                }}
+                style={[styles.deleteButton,{}]}
+              >
+                <Text style={{ color: "#EB5757" }}>Delete</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() => {
-                setOpenBottomSheet(true);
-                setBottomSheetToOpen("first");
-              }}
-              style={styles.deleteButton}
-            >
-              <Text style={{ color: "#EB5757" }}>Delete</Text>
-            </TouchableOpacity>
-          </View>
+          ))}
           <TouchableOpacity
             onPress={() => setAddCard(!addCard)}
             style={styles.cardInfoContainer}
@@ -255,6 +312,7 @@ const ManageCards = ({
                 mode="contained"
                 textColor="white"
                 onPress={handleAddCard}
+                loading={addingLoading}
               >
                 Continue
               </Button>
@@ -285,7 +343,7 @@ const ManageCards = ({
                   textAlign: "center",
                   fontWeight: "700",
                   fontSize: 17,
-                  marginTop: 8,
+                  marginTop: 12,
                 }}
               >
                 Confirm Delete
@@ -304,7 +362,7 @@ const ManageCards = ({
                   buttonColor="#EB5757"
                   mode="contained"
                   textColor="white"
-                  //   onPress={() => setAddCard(true)}
+                    onPress={handleDeleteCard}
                 >
                   Yes, delete
                 </Button>
@@ -419,7 +477,7 @@ const styles = StyleSheet.create({
     // alignItems: "flex-start",
     alignItems: "center",
     justifyContent: "space-between",
-    width: "100%",
+    // width: "100%",
     marginTop: 20,
   },
   cardDetailsContainer: {
@@ -439,6 +497,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
     marginLeft: 20,
+    // width: "78%"
   },
   cardTypeText: {
     fontSize: 17,

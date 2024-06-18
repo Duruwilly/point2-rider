@@ -79,7 +79,7 @@ const RecentOrders = ({
           // ))
           <Layout.FlatList
             showsVerticalScrollIndicator={false}
-            // style={{ flex: 1 }}
+            style={{ marginBottom: 60 }}
             data={orders}
             renderItem={({ item }) => {
               return (
@@ -117,6 +117,7 @@ const OrderList = ({
   const [loading, setLoading] = useState({
     accept: false,
     picked: false,
+    checkoutReq: false,
   });
   const [orderAccepted, setOrderAccepted] = useState<boolean>(false);
   const { request } = ApiRequest();
@@ -184,6 +185,25 @@ const OrderList = ({
     // navigation.navigate("order-details", {data: null});
   };
 
+  const handlePaymentReq = async () => {
+    try {
+      setLoading({ ...loading, checkoutReq: true });
+      const response = await request("POST", {
+        url: "/rider/orders/request-payment",
+        payload: { tracking_id: item?.tracking_id },
+      });
+      console.log("payment req", response);
+
+      if (response.status === "success") {
+        setLoading({ ...loading, checkoutReq: false });
+        alert("Payment request sent");
+      }
+    } catch (error) {
+    } finally {
+      setLoading({ ...loading, checkoutReq: false });
+    }
+  };
+
   return (
     <View key={item?.id} style={styles.orderCard}>
       {/* PACKAGE */}
@@ -227,13 +247,22 @@ const OrderList = ({
           <Text style={styles.labelText}>Phone number</Text>
           <Text style={styles.valueText}>{item?.recepient_phone}</Text>
         </View>
+
+        <View style={styles.durationTextContainer}>
+          <Text style={styles.labelText}>Delivery type</Text>
+          <Text style={{fontWeight: "600", fontSize: 14}}>
+            {item?.delivery_type === "STANDARD_DELIVERY"
+              ? "Standard Delivery"
+              : "Express Delivery"}
+          </Text>
+        </View>
         {/* 
         <View style={styles.durationTextContainer}>
           <Text style={styles.labelText}>Delivery time</Text>
           <Text style={styles.valueText}>{item?.status}</Text>
         </View> */}
       </View>
-      <View style={{marginTop: 30}}>
+      <View style={{ marginTop: 30 }}>
         {item?.status === "ASSIGNEDTORIDER" && (
           <View style={styles.buttonsRow}>
             <TouchableOpacity
@@ -292,14 +321,23 @@ const OrderList = ({
           <View style={styles.buttonsRow}>
             <TouchableOpacity
               onPress={() => handleSingleItem(item)}
-              style={[
-                styles.button,
-                { backgroundColor: colors.secondary, width: "100%" },
-              ]}
+              style={[styles.button, { backgroundColor: colors.secondary }]}
             >
               <Text style={[styles.buttonText, { color: colors.primary }]}>
                 View Details
               </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handlePaymentReq}
+              style={[styles.button, { backgroundColor: colors.primary }]}
+            >
+              {loading?.checkoutReq ? (
+                <ActivityIndicator />
+              ) : (
+                <Text style={[styles.buttonText, { color: "white" }]}>
+                  Request payment
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         )}
@@ -466,7 +504,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     color: "#1D2939",
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: "600",
     marginTop: 1,
   },

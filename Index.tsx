@@ -253,31 +253,32 @@ export default function Index() {
   //     }
   //   })();
   // }, [auth_Id]);
+  
+  // THIS
+  // useEffect(() => {
+  //   const pusher = new Pusher("fbuopzuamzxyjydgetkb", {
+  //     cluster: "",
+  //   });
 
-  useEffect(() => {
-    const pusher = new Pusher("fbuopzuamzxyjydgetkb", {
-      cluster: "",
-    });
+  //   const echo = new Echo({
+  //     client: pusher,
+  //     broadcaster: "reverb",
+  //     key: "fbuopzuamzxyjydgetkb",
+  //     wsHost: "ws.point2.ng",
+  //     wsPort: 80,
+  //     wssPort: 80,
+  //     forceTLS: "https",
+  //     enabledTransports: ["ws", "wss"],
+  //   });
 
-    const echo = new Echo({
-      client: pusher,
-      broadcaster: "reverb",
-      key: "fbuopzuamzxyjydgetkb",
-      wsHost: "ws.point2.ng",
-      wsPort: 80,
-      wssPort: 80,
-      forceTLS: "https",
-      enabledTransports: ["ws", "wss"],
-    });
+  //   echo.channel("message").listen(`message_received${auth_Id}`, (e: any) => {
+  //     console.log("Event data:", e);
+  //   });
 
-    echo.channel("message").listen(`message_received${auth_Id}`, (e: any) => {
-      console.log("Event data:", e);
-    });
-
-    return () => {
-      echo.disconnect();
-    };
-  }, [auth_Id]);
+  //   return () => {
+  //     echo.disconnect();
+  //   };
+  // }, [auth_Id]);
 
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { AppState } from "../../models/App";
-import {Orders} from "../../models/Orders";
+import { OrderResponse, Orders } from "../../models/Orders";
 import Charges from "../../models/Charges";
 import { UserMessages } from "../../models/Message";
 
@@ -11,7 +11,7 @@ const initialState: AppState = {
   app_version: "1.0.0",
   messages: [],
   orderCharges: {} as Charges,
-  orderResponse: {} as any
+  orderResponse: {} as OrderResponse,
 };
 
 const AppReducer = createSlice({
@@ -37,9 +37,21 @@ const AppReducer = createSlice({
       state.orders = action.payload;
     },
     setUserMessages: (state, action: PayloadAction<UserMessages[]>) => {
-      state.usersMessages = [...state.usersMessages, ...action.payload];
+      // state.usersMessages = [...state.usersMessages, ...action.payload];
+      state.usersMessages = action.payload
     },
-    setOrderResponse: (state, action: PayloadAction<any>) => {
+    // setUserMessages: (state, action: PayloadAction<UserMessages[]>) => {
+    //   const newMessages = action.payload.filter(
+    //     (newMessage) => !state.usersMessages.some(
+    //       (existingMessage) => existingMessage.id === newMessage.id
+    //     )
+    //   );
+    //   state.usersMessages = [...state.usersMessages, ...newMessages];
+    // },
+    clearUserMessages: (state) => {
+      state.usersMessages = [];
+    },
+    setOrderResponse: (state, action: PayloadAction<OrderResponse>) => {
       state.orderResponse = action.payload;
     },
     setOrderCharges: (state, action: PayloadAction<Charges>) => {
@@ -56,6 +68,7 @@ export const {
   clearMessages,
   setOrderCharges,
   setOrderResponse,
-  setUserMessages
+  setUserMessages,
+  clearUserMessages,
 } = AppReducer.actions;
 export default AppReducer.reducer;
