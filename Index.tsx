@@ -188,99 +188,6 @@ export default function Index() {
     }
   }, [App.messages]);
 
-  //   useEffect(() => {
-  //     echo.channel('orders')
-  //         .listen('OrderStatusUpdated', (e: any) => {
-  //             console.log('Order updated:', e);
-  //             // setOrder(e.order);
-  //         });
-
-  //     return () => {
-  //         echo.leave('orders');
-  //     };
-  // }, [])
-
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       await pusher.init({
-  //         apiKey: PUSHER_API_KEY,
-  //         cluster: CLUSTER_NAME,
-  //       });
-  //       await pusher.subscribe({
-  //         channelName: "message",
-  //         onEvent: (event: PusherEvent) => {
-  //           console.log("pusher event", event);
-  //           let eventData = JSON.parse(event.data);
-
-  //           let { data, type } = eventData.data;
-
-  //           console.log(JSON.stringify(data, null, 1), data);
-  //         },
-  //       });
-  //       await pusher.connect();
-  //     } catch (e) {
-  //       console.log(`ERROR: ${e}`);
-  //     }
-  //   })();
-  // }, [auth_Id]);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const pusher = new Pusher(PUSHER_API_KEY, {
-  //         cluster: CLUSTER_NAME,
-  //       });
-
-  //       const channel = pusher.subscribe("message");
-  //       channel.bind(`message_received${auth_Id}`, (event: any) => {
-  //         console.log("pusher event", event);
-  //         const eventData = JSON.parse(event.data);
-
-  //         const { data, type } = eventData.data;
-  //         console.log(JSON.stringify(data, null, 1), data);
-  //       });
-
-  //       pusher.connect();
-
-  //       return () => {
-  //         channel.unbind(`message_received${auth_Id}`);
-  //         pusher.unsubscribe("message");
-  //         pusher.disconnect();
-  //       };
-  //     } catch (e) {
-  //       console.log(`ERROR: ${e}`);
-  //     }
-  //   })();
-  // }, [auth_Id]);
-  
-  // THIS
-  // useEffect(() => {
-  //   const pusher = new Pusher("fbuopzuamzxyjydgetkb", {
-  //     cluster: "",
-  //   });
-
-  //   const echo = new Echo({
-  //     client: pusher,
-  //     broadcaster: "reverb",
-  //     key: "fbuopzuamzxyjydgetkb",
-  //     wsHost: "ws.point2.ng",
-  //     wsPort: 80,
-  //     wssPort: 80,
-  //     forceTLS: "https",
-  //     enabledTransports: ["ws", "wss"],
-  //   });
-
-  //   echo.channel("message").listen(`message_received${auth_Id}`, (e: any) => {
-  //     console.log("Event data:", e);
-  //   });
-
-  //   return () => {
-  //     echo.disconnect();
-  //   };
-  // }, [auth_Id]);
-
-
   useEffect(() => {
     // Function to check for updates and reload the app
     async function checkForUpdateAndReload() {
@@ -308,29 +215,28 @@ export default function Index() {
     // Send location to the backend
     if (location) {
       await request("POST", {
-        url: "/location",
+        url: "/rider/update-current-location",
         payload: {
-          latitude: location?.latitude,
-          longitude: location?.longitude,
+          current_position: [location?.latitude, location?.longitude]
         },
       });
     }
   };
 
   // Call this function periodically
-  // useEffect(() => {
-  //   if (appIsReady) {
-  //     const id = setInterval(sendLocationUpdate, 5000);
-  //     setIntervalId(id);
+  useEffect(() => {
+    if (appIsReady) {
+      const id = setInterval(sendLocationUpdate, 20000);
+      setIntervalId(id);
 
-  //     // Clean up the interval on component unmount or if appIsReady changes
-  //     return () => clearInterval(id);
-  //   } else if (intervalId) {
-  //     // Clear the interval if appIsReady is false and intervalId is set
-  //     clearInterval(intervalId);
-  //     setIntervalId(null);
-  //   }
-  // }, [appIsReady, location]);
+      // Clean up the interval on component unmount or if appIsReady changes
+      return () => clearInterval(id);
+    } else if (intervalId) {
+      // Clear the interval if appIsReady is false and intervalId is set
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  }, [appIsReady, location]);
 
   if (!appIsReady) {
     return (

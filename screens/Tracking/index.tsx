@@ -46,7 +46,7 @@ import { numberFormat } from "utils/helpers";
 const Tracking = ({ route }: any) => {
   const { request } = ApiRequest();
   const { orders } = useSelector((state: RootState) => state.appReducer);
-  const { location } = useSelector((state: RootState) => state.user);
+  const { location, user } = useSelector((state: RootState) => state.user);
 
   const orderItem = route?.params?.orderItem;
   const insets = useSafeAreaInsets();
@@ -87,12 +87,18 @@ const Tracking = ({ route }: any) => {
 
   // console.log(orderDetails, orderItem?.tracking_id);
   // 6.597 3.343 6.367 4.817
-  const originLatitude = orderDetails?.pickup_location_coordinate
-    ? orderDetails?.pickup_location_coordinate[0]
+  const originLatitude = location
+    ? location?.latitude
     : null;
-  const originLongitude = orderDetails?.pickup_location_coordinate
-    ? orderDetails?.pickup_location_coordinate[1]
+  const originLongitude = location
+    ? location?.longitude
     : null;
+  // const originLatitude = orderDetails?.pickup_location_coordinate
+  //   ? orderDetails?.pickup_location_coordinate[0]
+  //   : null;
+  // const originLongitude = orderDetails?.pickup_location_coordinate
+  //   ? orderDetails?.pickup_location_coordinate[1]
+  //   : null;
   const destinationLatitude = orderDetails?.delivery_point_location_coordinate
     ? orderDetails?.delivery_point_location_coordinate[0]
     : null;
@@ -127,6 +133,7 @@ const Tracking = ({ route }: any) => {
     originLongitude,
     destinationLatitude,
     destinationLongitude,
+    location
   ]);
 
   const navigation: any = useNavigation();

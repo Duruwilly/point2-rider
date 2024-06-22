@@ -24,6 +24,7 @@ import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import CustomRadioButton from "../../components/RadioButton/RadioButton";
 import { colors } from "../../constants/colors";
 import { ApiRequest } from "../../services/ApiNetwork";
+import { useFetchUser } from "services/fetchUser";
 
 const Home = ({ tab }: { tab: string }) => {
   const insets = useSafeAreaInsets();
@@ -32,6 +33,7 @@ const Home = ({ tab }: { tab: string }) => {
   const { user } = useSelector((state: RootState) => state.user);
   const { orders } = useSelector((state: RootState) => state.appReducer);
   const { fetchOrders } = useFetchOrders();
+  const { fetchUser } = useFetchUser();
   const isFocused = useIsFocused();
   const bottomSheetRef: any = useRef(null);
   const snapPoints = useMemo(() => ["25%", "40%"], []);
@@ -97,6 +99,19 @@ const Home = ({ tab }: { tab: string }) => {
     }
   };
 
+  const changeStatus = async () => {
+    try {
+      const resp = await request("POST", {
+        url: "/rider/update-availability",
+        payload: { availability_status: user?.availability_status === "ONLINE" ? "OFFLINE" : "ONLINE" },
+      });
+
+      if (resp.status === "success") {
+        fetchUser();
+      }
+    } catch (error) {}
+  };
+
   useEffect(() => {
     (async () => {
       await fetchOrders();
@@ -138,19 +153,24 @@ const Home = ({ tab }: { tab: string }) => {
                 </View>
               </TouchableOpacity> */}
 
-              <TouchableOpacity style={styles.onlineStatusButton}>
-                <Octicons name="dot-fill" size={20} color="#27AE60" />
-                <Text style={styles.onlineStatusText}>Online</Text>
+              <TouchableOpacity
+                onPress={changeStatus}
+                style={styles.onlineStatusButton}
+              >
+                <Octicons name="dot-fill" size={20} color={user?.availability_status === "ONLINE" ? "#27AE60" : colors.secondary} />
+                <Text style={styles.onlineStatusText}>
+                  {`${user?.availability_status?.charAt(0).toUpperCase()}${user?.availability_status?.slice(1).toLowerCase()}`}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-          <RecentOrders
-            setOpenBottomSheet={setOpenBottomSheet}
-            setBottomSheetToOpen={setBottomSheetToOpen}
-            setTrackingId={setTrackingId}
-          />
+        <RecentOrders
+          setOpenBottomSheet={setOpenBottomSheet}
+          setBottomSheetToOpen={setBottomSheetToOpen}
+          setTrackingId={setTrackingId}
+        />
         {/* </Layout.ScrollView> */}
       </Layout>
 

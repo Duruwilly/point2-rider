@@ -6,5 +6,7 @@ export default interface User {
     phone: string;
     profile_picture: string;
     mime: string;
+    availability_status: string;
+    is_verified: string
   }
   
