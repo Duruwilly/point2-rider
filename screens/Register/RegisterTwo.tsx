@@ -196,11 +196,10 @@ const RegisterTwo = ({ navigation, route }: any) => {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log("registration:", response);
 
         if (response.status === "success") {
           await AsyncStorage.setItem(
-            "access_token",
+            "riders_access_token",
             response.data.data.access_token
           );
           dispatch(setAccessToken(response.data.data.access_token));

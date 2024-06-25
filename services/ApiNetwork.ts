@@ -113,8 +113,9 @@ export const ApiRequest = (
     if (statusCode === 401) {
       // Handle unauthorized errors
       dispatch(clearUser());
+      // navigate("welcome", null);
       if (!props.ignoreError) {
-        navigate("welcome", null);
+        // navigate("welcome", null);
       }
     } else {
       if (!props.ignoreError) {

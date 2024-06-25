@@ -248,7 +248,9 @@ const Tracking = ({ route }: any) => {
             Distance: {distance?.toFixed(2)}
           </Text>
           <Text style={{ fontWeight: "800", color: "red" }}>
-            Duration: {Math.ceil(duration)} min
+            Duration: {duration >= 60 
+          ? `${Math.floor(duration / 60)} hr ${Math.ceil(duration % 60)} min` 
+          : `${Math.ceil(duration)} min`}
           </Text>
         </View>
       ) : null}

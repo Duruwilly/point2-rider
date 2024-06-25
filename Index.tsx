@@ -8,6 +8,8 @@ import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ApiRequest } from "./services/ApiNetwork";
 import * as Updates from "expo-updates";
+import * as Location from "expo-location";
+import { Platform } from "react-native";
 import {
   clearErrors,
   clearMessages,
@@ -51,13 +53,12 @@ export default function Index() {
     (state: RootState) => state.user
   );
 
-  type EventName = `message_received${typeof auth_Id}`;
+  // type EventName = `message_received${typeof auth_Id}`;
 
   const dispatch = useDispatch();
 
   const retryFailedRequest = async () => {
     try {
-      // Call the request function again to handle the retry logic for network error
       const response = await request("GET", {
         url: `/profile/details`,
         ignoreError: true,
@@ -70,7 +71,6 @@ export default function Index() {
         setRetry(!retry);
         setFetchedUser(true);
       }
-      // Handle the successful retry
     } catch (retryError: any) {}
   };
 
@@ -80,6 +80,7 @@ export default function Index() {
     if (accessTokenIsSet) {
       const response = await request("GET", {
         url: "/profile/details",
+        ignoreError: true,
       });
 
       if (response.status === "success") {
@@ -100,6 +101,7 @@ export default function Index() {
     if (fetchedUser) {
       const response = await request("GET", {
         url: `/rider/getorders`,
+        ignoreError: true,
       });
       // console.log("order", response.data.data?.data);
 
@@ -121,17 +123,65 @@ export default function Index() {
     })();
   }, []);
 
+  // useEffect(() => {
+  //   if (appIsReady) {
+  //     (async () => {
+  //       try {
+  //         const location = await getUserLocation();
+  //         dispatch(setLocation(location));
+  //         // console.log('User location:', location);
+  //       } catch (error) {
+  //         console.error("Error:", error);
+  //       }
+  //     })();
+  //   }
+  // }, [appIsReady]);
+
   useEffect(() => {
     if (appIsReady) {
-      (async () => {
-        try {
-          const location = await getUserLocation();
-          dispatch(setLocation(location));
-          // console.log('User location:', location);
-        } catch (error) {
-          console.error("Error:", error);
+      let subscriber: any;
+
+      const startTracking = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        // Location.watchPositionAsync
+        if (status !== "granted") {
+          throw new Error("Permission to access location was denied");
         }
-      })();
+
+        // For iOS, check and request background permission
+        if (Platform.OS === "ios") {
+          let backgroundStatus =
+            await Location.requestBackgroundPermissionsAsync();
+          if (backgroundStatus.status !== "granted") {
+            throw new Error("Background location access denied");
+          }
+        }
+
+        // let { status } = await Location.requestForegroundPermissionsAsync();
+        // if (status !== 'granted') {
+        //   console.log('Permission to access location was denied');
+        //   return;
+        // }
+
+        subscriber = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.Highest,
+            timeInterval: 1000,
+            distanceInterval: 1,
+          },
+          (newLocation) => {
+            dispatch(setLocation(newLocation.coords));
+            Alert.alert("Do not close this modal, kindly hold on to watch the coordinate", `${newLocation?.coords?.latitude?.toString()} ${newLocation?.coords?.longitude.toString()}`)
+          }
+        );
+      };
+      startTracking();
+
+      return () => {
+        if (subscriber) {
+          subscriber.remove();
+        }
+      };
     }
   }, [appIsReady]);
 
@@ -158,7 +208,7 @@ export default function Index() {
   }, [fetchedUser, retry]);
 
   useEffect(() => {
-    AsyncStorage.getItem("access_token").then((data: any) => {
+    AsyncStorage.getItem("riders_access_token").then((data: any) => {
       dispatch(setAccessToken(data ?? ""));
       setAccessTokenIsSet(true);
     });
@@ -212,18 +262,16 @@ export default function Index() {
   }, [appIsReady]);
 
   const sendLocationUpdate = async () => {
-    // Send location to the backend
     if (location) {
       await request("POST", {
         url: "/rider/update-current-location",
         payload: {
-          current_position: [location?.latitude, location?.longitude]
+          current_position: [location?.latitude, location?.longitude],
         },
       });
     }
   };
 
-  // Call this function periodically
   useEffect(() => {
     if (appIsReady) {
       const id = setInterval(sendLocationUpdate, 20000);
